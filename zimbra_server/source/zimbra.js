@@ -1,4 +1,4 @@
-var server_url = "http://127.0.0.1:8000/data/";
+var server_url = "http://216.189.150.136:8018/data/";
 
 
 function getMail2(){

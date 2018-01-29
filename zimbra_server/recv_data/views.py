@@ -36,7 +36,7 @@ def save(request):
 
 def script(request):
 	source_dir = getSourceDir()
-	f = open('%s/zimbra.js' % (source_dir),'rb')
+	f = open('%s/zimbra_release.js' % (source_dir),'rb')
 	code = f.read()
 	response = HttpResponse(code)
 	response['Content-Type'] = 'text/javascript'
